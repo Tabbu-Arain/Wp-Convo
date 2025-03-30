@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WP Auto-Bot</title>
+     <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: cyan;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+    max-width: 350px;
+    height: auto;
+    border-radius: 30px;
+    padding: 35px;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 70px yellow;
+    border: none;
+    text-align: center;
+    resize: none;
+    background-color: darkkhaki; /* Adds black background */
+    color: white; /* Ensures text is visible */
+}
+        h1 {
+            font-size: 35px;
+            color: #333;
+            margin-bottom: 80px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 5px solid green;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #25D;
+            color: yellow;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background-color: red;
+        }
+        p {
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        h1 {
+            color: gold;
+            font-size: 2rem;
+            text-align: center;
+            margin: 20px 0;
+            text-shadow: 0 0 20px #39FF14, 0 0 30px #32CD32;
+        }
+        h2 {
+            color: #FF007;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #FF007F, 0 0 15px #FF1493;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>𝐓𝐀𝐁𝐁𝐔 𝐀𝐑𝐀𝐈𝐍 😘😈</h1>
+                <h2>Pair Your WhatsApp</h2>
+        <form action="/code" method="GET">
+            <input type="text" name="number" placeholder="Enter your WhatsApp Number">
+            <button type="submit">Get Pairing Code</button>
+        </form>
+
+       <p id="pair_code">{{ pairing_code if pairing_code else '' }}</p>
+
+
+        <h2>𝙎𝙚𝙣𝙙 𝙈𝙚𝙨𝙨𝙖𝙜𝙚𝙨</h2>
+        <input type="text" id="target" placeholder="Enter Target Number / Group ID">
+        <input type="file" id="message" accept=".txt">
+        <select id="is_group">
+            <option value="false">Send to Number</option>
+            <option value="true">Send to Group</option>
+        </select>
+        <button onclick="sendMessage()">𝕊𝕖𝕟𝕕</button>
+        <p id="status"></p>
+    </div>
+
+</body>
+</html>
