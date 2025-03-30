@@ -1,0 +1,5 @@
+Flask
+asyncio
+pino
+maher_zubair_baileys
+gunicorn  # For production deployment
