@@ -1,5 +1,2 @@
-Flask
-asyncio
-pino
-maher_zubair_baileys
-gunicorn  # For production deployment
+flask>=2.0.0
+py-node>=0.1.0
