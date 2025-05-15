@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 import subprocess
 import os
 
@@ -22,6 +22,10 @@ def status():
         "status": "running",
         "node_pid": node_process.pid
     }
+
+@app.route('/qr.png')
+def serve_qr():
+    return send_from_directory('whatsapp_node', 'qr.png')
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
