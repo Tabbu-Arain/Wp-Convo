@@ -1,46 +1,53 @@
 from flask import Flask, request, jsonify, render_template
+import subprocess
 import os
-import asyncio
-from baileys import WhatsApp  # Assuming you have a Python Baileys wrapper
+import threading
+import time
 
 app = Flask(__name__)
 
-# Configuration
-SESSION_DIR = "auth_session"
-os.makedirs(SESSION_DIR, exist_ok=True)
-
-# Initialize WhatsApp client
-wa = WhatsApp(session_path=SESSION_DIR)
+# Path to Node.js script
+NODE_SCRIPT = os.path.join("whatsapp_node", "index.js")
 
 @app.route("/")
 def home():
     return render_template("index.html")
 
-@app.route("/send", methods=["POST"])
-async def send_message():
+@app.route("/start", methods=["POST"])
+def start_whatsapp():
     try:
-        data = request.json
+        # Run Node.js script in background
+        threading.Thread(
+            target=subprocess.run,
+            args=(["node", NODE_SCRIPT],),
+            kwargs={"capture_output": True, "text": True}
+        ).start()
         
-        # Required parameters
-        target = data["number"] + "@s.whatsapp.net"
-        message = data["message"]
-        delay = int(data.get("delay", 1))  # Default 1 second delay
-        
-        # Ensure connection
-        if not wa.is_connected():
-            return jsonify({"qr": wa.get_qr()}), 200
-        
-        # Send message
-        await asyncio.sleep(delay)  # Respect delay
-        await wa.send_message(target, message)
-        
-        return jsonify({
-            "success": True,
-            "message": "Message sent successfully"
-        })
+        return jsonify({"status": "Node.js script started"})
     
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    app.run()
+@app.route("/send", methods=["POST"])
+def send_message():
+    data = request.json
+    target = data.get("number")
+    message = data.get("message")
+    
+    if not target or not message:
+        return jsonify({"error": "Missing number/message"}), 400
+    
+    try:
+        # Send message via Node.js (example - adapt to your Node script)
+        result = subprocess.run(
+            ["node", "whatsapp_node/send.js", target, message],
+            capture_output=True,
+            text=True
+        )
+        return jsonify({"output": result.stdout})
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
