@@ -1,114 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Tool (Educational Use)</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
-        }
-        .qr-container {
-            margin: 20px 0;
-        }
-        #qr-code {
-            width: 200px;
-            height: 200px;
-            margin: 0 auto;
-            border: 1px solid #ddd;
-        }
-        input, button {
-            padding: 10px;
-            margin: 5px;
-            width: 80%;
-        }
-        button {
-            background-color: #25D366;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        .status {
-            margin-top: 20px;
-            color: #666;
-        }
-    </style>
+    <title>WhatsApp Controller</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
 </head>
 <body>
-    <h1>WhatsApp Message Sender</h1>
-    <p><i>For educational purposes only</i></p>
-
-    <!-- QR Code Section -->
-    <div class="qr-container" id="qr-section">
-        <h3>Scan QR Code to Login</h3>
-        <div id="qr-code"></div>
-        <p>Open WhatsApp > Linked Devices > Scan QR Code</p>
-    </div>
-
-    <!-- Message Form (hidden until logged in) -->
-    <div id="message-form" style="display:none;">
-        <input type="text" id="number" placeholder="Target number (e.g., 911234567890)" required>
-        <input type="text" id="message" placeholder="Your message" required>
-        <button onclick="sendMessage()">Send Message</button>
-    </div>
-
-    <!-- Status Updates -->
-    <div class="status" id="status"></div>
-
+    <h1>WhatsApp Control Panel</h1>
+    
+    <button onclick="startWhatsApp()">Start WhatsApp</button>
+    <div id="qr-code"></div>
+    
     <script>
-        // Check login status and fetch QR if needed
-        async function checkLogin() {
-            const response = await fetch('/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ number: '', message: '' })
-            });
-            const data = await response.json();
-
-            if (data.qr) {
-                // Show QR code
-                document.getElementById('qr-code').innerHTML = 
-                    `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.qr)}">`;
-            } else if (data.success) {
-                // Hide QR, show message form
-                document.getElementById('qr-section').style.display = 'none';
-                document.getElementById('message-form').style.display = 'block';
-                updateStatus('✅ Ready to send messages!');
-            }
+        function startWhatsApp() {
+            fetch('/start', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    // Poll for QR code (simplified)
+                    setInterval(() => {
+                        fetch('/get_qr').then(/* ... */); 
+                    }, 2000);
+                });
         }
-
-        // Send message
-        async function sendMessage() {
-            const number = document.getElementById('number').value;
-            const message = document.getElementById('message').value;
-            updateStatus('Sending...');
-
-            const response = await fetch('/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ number, message })
-            });
-            const data = await response.json();
-
-            if (data.success) {
-                updateStatus('Message sent successfully!');
-            } else {
-                updateStatus(`Error: ${data.error || 'Unknown error'}`);
-            }
-        }
-
-        // Update status text
-        function updateStatus(text) {
-            document.getElementById('status').innerText = text;
-        }
-
-        // Check login status every 3 seconds
-        setInterval(checkLogin, 3000);
-        checkLogin(); // Initial check
     </script>
 </body>
 </html>
