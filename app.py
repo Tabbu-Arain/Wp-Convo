@@ -26,6 +26,11 @@ def status():
 @app.route('/qr.png')
 def serve_qr():
     return send_from_directory('whatsapp_node', 'qr.png')
+@app.route('/qr-status')
+def qr_status():
+    return {
+        'qr_required': not os.path.exists('whatsapp_node/auth_info/creds.json')
+    }
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
