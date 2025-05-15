@@ -1,53 +1,24 @@
-from flask import Flask, request, jsonify, render_template
-import subprocess
 import os
-import threading
-import time
+import subprocess
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 
-# Path to Node.js script
-NODE_SCRIPT = os.path.join("whatsapp_node", "index.js")
+# Start Node.js when Flask initializes
+node_process = subprocess.Popen(
+    ["node", "whatsapp_node/index.js"],
+    cwd=os.getcwd(),
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE
+)
 
 @app.route("/")
-def home():
-    return render_template("index.html")
-
-@app.route("/start", methods=["POST"])
-def start_whatsapp():
-    try:
-        # Run Node.js script in background
-        threading.Thread(
-            target=subprocess.run,
-            args=(["node", NODE_SCRIPT],),
-            kwargs={"capture_output": True, "text": True}
-        ).start()
-        
-        return jsonify({"status": "Node.js script started"})
-    
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/send", methods=["POST"])
-def send_message():
-    data = request.json
-    target = data.get("number")
-    message = data.get("message")
-    
-    if not target or not message:
-        return jsonify({"error": "Missing number/message"}), 400
-    
-    try:
-        # Send message via Node.js (example - adapt to your Node script)
-        result = subprocess.run(
-            ["node", "whatsapp_node/send.js", target, message],
-            capture_output=True,
-            text=True
-        )
-        return jsonify({"output": result.stdout})
-    
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+def status():
+    return jsonify({
+        "status": "running",
+        "node_pid": node_process.pid
+    })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
