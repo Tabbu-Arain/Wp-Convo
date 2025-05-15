@@ -1,23 +1,24 @@
 import { makeWASocket, useMultiFileAuthState } from '@whiskeysockets/baileys';
-import qrcode from 'qrcode-terminal';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import qrcode from 'qrcode';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = new URL('.', import.meta.url).pathname;
+
+// Store QR in a file for Flask to read
+async function saveQR(qrData) {
+  const qrImage = await qrcode.toDataURL(qrData);
+  await fs.writeFile(path.join(__dirname, 'qr.png'), qrImage.split(',')[1], 'base64');
+}
 
 async function startBot() {
-  const { state, saveCreds } = await useMultiFileAuthState(
-    path.join(__dirname, 'auth_info')
-  );
-
+  const { state, saveCreds } = await useMultiFileAuthState('./auth_info');
   const sock = makeWASocket({ auth: state });
 
-  sock.ev.on('connection.update', (update) => {
+  sock.ev.on('connection.update', async (update) => {
     if (update.qr) {
-    console.log("QR_CODE:" + update.qr);  // Special format
-}
+      await saveQR(update.qr); // Save QR as image file
+    }
     if (update.connection === 'open') {
-      console.log("[FLASK] WhatsApp connected");
+      console.log("WhatsApp connected!");
     }
   });
 
