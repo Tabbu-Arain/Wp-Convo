@@ -1,61 +1,46 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import os
-import random
 import asyncio
-from threading import Thread
-from maher_zubair_baileys import Gifted_Tech, useMultiFileAuthState, makeCacheableSignalKeyStore
-import pino
+from baileys import WhatsApp  # Assuming you have a Python Baileys wrapper
 
 app = Flask(__name__)
 
-sessions = {}
+# Configuration
+SESSION_DIR = "auth_session"
+os.makedirs(SESSION_DIR, exist_ok=True)
 
-# 🔥 Generate WhatsApp Pairing Code
-async def generate_pair_code(number):
-    try:
-        session_id = f"session_{random.randint(1000, 9999)}"
-        sessions[number] = session_id
-        os.makedirs(f'./temp/{session_id}', exist_ok=True)
+# Initialize WhatsApp client
+wa = WhatsApp(session_path=SESSION_DIR)
 
-        state, saveCreds = await useMultiFileAuthState(f'./temp/{session_id}')
-
-        bot = Gifted_Tech({
-            "auth": {
-                "creds": state.creds,
-                "keys": makeCacheableSignalKeyStore(state.keys, pino.Logger(level="fatal"))
-            },
-            "printQRInTerminal": False,
-            "logger": pino.Logger(level="fatal"),
-            "browser": ["Chrome (Linux)", "", ""]
-        })
-
-        await asyncio.sleep(2)
-        code = await bot.requestPairingCode(number)
-        return code
-
-    except Exception as e:
-        return str(e)
-
-# 🔥 Serve the Frontend (Default Page)
-@app.route('/')
+@app.route("/")
 def home():
-    return render_template('index.html', pairing_code=None)  # Default page without code
+    return render_template("index.html")
 
-# 🔥 API to Get Pairing Code and Pass it to HTML
-@app.route('/code', methods=['GET'])
-def get_code():
-    number = request.args.get("number")
-    if not number:
-        return render_template('index.html', pairing_code="Enter a valid number")
-
+@app.route("/send", methods=["POST"])
+async def send_message():
     try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        code = loop.run_until_complete(generate_pair_code(number))
-        return render_template('index.html', pairing_code=code)
+        data = request.json
+        
+        # Required parameters
+        target = data["number"] + "@s.whatsapp.net"
+        message = data["message"]
+        delay = int(data.get("delay", 1))  # Default 1 second delay
+        
+        # Ensure connection
+        if not wa.is_connected():
+            return jsonify({"qr": wa.get_qr()}), 200
+        
+        # Send message
+        await asyncio.sleep(delay)  # Respect delay
+        await wa.send_message(target, message)
+        
+        return jsonify({
+            "success": True,
+            "message": "Message sent successfully"
+        })
+    
     except Exception as e:
-        return render_template('index.html', pairing_code=str(e))
+        return jsonify({"error": str(e)}), 500
 
-# 🔥 Run Flask App
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
