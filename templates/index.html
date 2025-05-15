@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>WhatsApp Controller</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <title>WhatsApp Bot</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        #qr-container { margin: 20px auto; width: 200px; }
+    </style>
 </head>
 <body>
-    <h1>WhatsApp Control Panel</h1>
-    
-    <button onclick="startWhatsApp()">Start WhatsApp</button>
-    <div id="qr-code"></div>
-    
+    <h1>WhatsApp Bot Control Panel</h1>
+    <div id="qr-container"></div>
+    <p>Status: <span id="status">Loading...</span></p>
+
     <script>
-        function startWhatsApp() {
-            fetch('/start', { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    // Poll for QR code (simplified)
-                    setInterval(() => {
-                        fetch('/get_qr').then(/* ... */); 
-                    }, 2000);
-                });
-        }
+        // Fetch status from backend
+        fetch('/status')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('status').textContent = 
+                    `Running (PID: ${data.node_pid})`;
+            });
     </script>
 </body>
 </html>
