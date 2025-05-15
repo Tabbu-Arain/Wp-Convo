@@ -1,3 +1,2 @@
-flask==3.0.2  # Pinned stable version
-gunicorn==21.2.0  # Required for Render
-python-dotenv==1.0.0  # For environment variables
+flask==3.0.2
+gunicorn==21.2.0
